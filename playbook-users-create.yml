@@ -1,0 +1,30 @@
+- hosts: servers
+
+  vars:
+    users:
+      - { name: jaime, email: jaime@test.com }
+      - { name: sansa, email: sansa@test.com }
+      - { name: robert, email: robert@test.com }
+
+  tasks:
+    - name: create user
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        state: present
+      loop: "{{users}}"
+      become: yes
+
+    - name: copy gitconfig
+      ansible.builtin.template:
+        src: users/.gitconfig.j2
+        dest: "/home/{{item.name}}/.gitconfig"
+      loop: "{{users}}"
+      become: yes
+
+    - name: copy ssh key
+      ansible.posix.authorized_key:
+        user: "{{item.name}}"
+        state: present
+        key: "{{ lookup('file', 'users/localvm.pub') }}"
+      loop: "{{users}}"
+      become: yes
