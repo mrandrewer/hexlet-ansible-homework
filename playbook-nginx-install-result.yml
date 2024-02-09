@@ -3,11 +3,14 @@
   vars:
     nginx_port: 80
     root_dir: /var/tmp/www
+    invite: "This is server {{ ansible_hostname}}!"
 
   tasks:
     - name: install nginx
       ansible.builtin.apt:
-        name: nginx
+        name: 
+          - nginx
+          - cowsay
         state: present
         update_cache: yes
       become: yes
@@ -26,9 +29,14 @@
         state: directory
         mode: '0755'
 
-    - name: update ingex.html
+    - name: create cowsay
+      ansible.builtin.shell: "cowsay {{invite}}"
+      register: invite_cowsay
+      ignore_errors: yes
+
+    - name: update index.html
       ansible.builtin.template:
-        src: nginx/index.html.j2
+        src: nginx/index3.html.j2
         dest: "{{root_dir}}/index.html"
       notify:
         - restart nginx
